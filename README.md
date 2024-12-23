@@ -1,21 +1,18 @@
-# vCard-to-CSV
+# vCard-to-FreePBX-CSV
 
-- Makes vCard (.vcf) data readable
+- Makes vCard (.vcf) data readable for FreePBX
 
 - Full security nothing is uploaded, everything just plays out
   their computer with the language JavaScript.
 
 - Just download and double click on 'vCard-to-CSV.html' file!
 
-- Tested with a contacts.vcf file from my Android Samsung smartphone.
+- Tested with a contacts.vcf file from my Android Samsung and iOS smartphone.
 
 - Runs on almost every device!
 
 
 ![Bild](https://github.com/sauternic/Gif_Bilder/blob/master/VCard-to-CSV2.png)
-
-
-# [Use vCard-to-CSV Online](https://sauternic.github.io/vCard-to-CSV/)
 
 
 ### Tested on new
@@ -68,14 +65,14 @@ Then SQL:
 
 ------
 
-- Macht vCard(.vcf) Daten lesbar   
+- Macht vCard(.vcf) Daten für FreePBX lesbar   
 
 - Volle Sicherheit es wird nichts hochgeladen, alles spielt sich nur auf  
   ihrem Computer ab mit der Sprache JavaScript.   
 
 - Einfach runterladen und Doppelklick auf 'vCard-to-CSV.html' file!
 
-- Getestet mit einem kontakte.vcf file von meinem Android-Samsung Smartphone.   
+- Getestet mit einem kontakte.vcf file von meinem Android-Samsung und iOS Smartphone.   
 
 - Läuft fast auf jedem Gerät!   
 
