@@ -267,7 +267,7 @@
                             if (filter(strSpalten, ausgabeArr, x, i))
                                 continue;
 
-                            strSpalten += ausgabeArr[x][i][0] + ';';
+                            strSpalten += ausgabeArr[x][i][0] + ',';
                         }
                     }
                     function filter(strSpalten, ausgabeArr, x, i) {
@@ -286,13 +286,45 @@
 
                         // Muss sein sonst wird N in FN gefunden und nicht aufgenommen! :()
                         if (strSpalten) {
-                            var spaltenWerte = strSpalten.split(';');
+                            var spaltenWerte = strSpalten.split(',');
                             for (var x = 0; x < spaltenWerte.length; x++) {
                                 if (spaltenWerte[x] === str)
                                     return true;
                             }
                         }
                         return false;
+                    }
+
+                    let originalHeaders = strSpalten.split(',');
+                    let telCount = 1;
+                    
+                    // Create mapping of old to new headers
+                    let headerMapping = {};
+                    let newHeaders = ['groupname', 'grouptype', 'displayname'];
+                    originalHeaders.forEach(header => {
+                        if (header.includes('TEL')) {
+                            let phoneHeader = 'phone_' + telCount + '_number';
+                            let typeHeader = 'phone_' + telCount + '_type';
+                            headerMapping[header] = phoneHeader;
+                            newHeaders.push(phoneHeader);
+                            newHeaders.push(typeHeader);
+                            telCount++;
+                        } else if (header === 'FN') {
+                            headerMapping[header] = 'displayname';
+                        }
+                    });
+
+                    // Replace headers
+                    strSpalten = newHeaders.join(',');
+
+                    // Update the object keys in ausgabeArr to match new headers
+                    for (var x = 0; x < ausgabeArr.length; x++) {
+                        for (var i = 0; i < ausgabeArr[x].length; i++) {
+                            if (headerMapping[ausgabeArr[x][i][0]]) {
+                                var oldKey = ausgabeArr[x][i][0];
+                                ausgabeArr[x][i][0] = headerMapping[oldKey];
+                            }
+                        }
                     }
 
 
@@ -309,20 +341,47 @@
                     var obj = {};
 
 
+                    function removeEmojis(string) {
+                        return string.replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+                    }
+
                     var tempStr = '';
                     for (var x = 0; x < ausgabeArr.length; x++) {
+                        obj = {};  // Reset obj for each row
                         for (var i = 0; i < ausgabeArr[x].length; i++) {
                             // key value
-                            obj[ausgabeArr[x][i][0]] = ausgabeArr[x][i][1];
+                            if (ausgabeArr[x][i][0] === 'displayname') {
+                                obj[ausgabeArr[x][i][0]] = removeEmojis(ausgabeArr[x][i][1]);
+                            } else {
+                                obj[ausgabeArr[x][i][0]] = ausgabeArr[x][i][1];
+                            }
                         }
 
-                        var spaltenWerte = strSpalten.split(';');
+                        var spaltenWerte = strSpalten.split(',');
+                        var rowValues = [];  // Store values in array instead of string
+                        
                         for (var y = 0; y < spaltenWerte.length; y++) {
-                            tempStr += obj[spaltenWerte[y]] + ';';
+                            let value;
+                            if (spaltenWerte[y] === 'groupname') {
+                                value = 'External';
+                            } else if (spaltenWerte[y] === 'grouptype') {
+                                value = 'external';
+                            } else if (spaltenWerte[y].includes('phone_')) {
+                                if (spaltenWerte[y].includes('_type')) {
+                                    value = 'home';
+                                } else {
+                                    value = obj[spaltenWerte[y]] || '555';
+                                    if (value) {
+                                        value = value.replace(/\s+/g, '').replace(/^\+49/, '0');
+                                    }
+                                }
+                            } else if (spaltenWerte[y] === 'displayname') {
+                                value = '"' + (obj['displayname'] || '') + '"';
+                            }
+                            rowValues.push(value);
                         }
-                        
-                        
-                        //Hier wird abgefüllt!!
+
+                        tempStr = rowValues.join(',');
                         tempStr = tempStr.replace(/undefined/g, '');
                         arrEntgueltig[x] = tempStr;
 
