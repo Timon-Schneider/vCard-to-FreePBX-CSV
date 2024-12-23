@@ -11,7 +11,7 @@
 
 - Runs on almost every device!
 
-
+Picture is not up to date, as certain changes have been made for FreePBX
 ![Bild](https://github.com/sauternic/Gif_Bilder/blob/master/VCard-to-CSV2.png)
 
 
@@ -57,7 +57,7 @@ or
   Copy and Paste into a Textfile.csv
     
 Then SQL:
-    LOAD DATE INFILE 'C: / ... Textfile.csv' INTO TABLE <table> FIELDS TERMINATED BY ';' ;
+    LOAD DATE INFILE 'C: / ... Textfile.csv' INTO TABLE <table> FIELDS TERMINATED BY ',' ;
 
 --------
 
@@ -116,4 +116,4 @@ oder
   Copy and paste in ein Textfile.csv
     
 	Dann SQL:
-    LOAD DATE INFILE 'C:/...Textfile.csv' INTO TABLE <table> FIELDS TERMINATED BY ';' ;
+    LOAD DATE INFILE 'C:/...Textfile.csv' INTO TABLE <table> FIELDS TERMINATED BY ',' ;
