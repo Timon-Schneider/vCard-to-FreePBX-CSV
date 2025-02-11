@@ -259,39 +259,34 @@
 
                     //Ausgabe:
                     var strSpalten = '';
+                    var processedHeaders = new Set();
+                    var headerCounts = {};
                     for (var x = 0; x < ausgabeArr.length; x++) {
                         //Spalten
                         for (var i = 0; i < ausgabeArr[x].length; i++) {
-
+                            var field = ausgabeArr[x][i][0];
+                            
                             //Filter
-                            if (filter(strSpalten, ausgabeArr, x, i))
+                            if (filter(field))
                                 continue;
 
-                            strSpalten += ausgabeArr[x][i][0] + ';';
+                            headerCounts[field] = (headerCounts[field] || 0) + 1;
                         }
                     }
-                    function filter(strSpalten, ausgabeArr, x, i) {
-                        var str = '';
-
-                        //Grober Filter
-                        //Folgendes Rauswerfen
-                        str = ausgabeArr[x][i][0];
-
-                        if (str.match(/VERSION/i))
-                            return true;
-                        if (str.match(/BEGIN/i))
-                            return true;
-                        if (str.match(/END/i))
-                            return true;
-
-                        // Muss sein sonst wird N in FN gefunden und nicht aufgenommen! :()
-                        if (strSpalten) {
-                            var spaltenWerte = strSpalten.split(';');
-                            for (var x = 0; x < spaltenWerte.length; x++) {
-                                if (spaltenWerte[x] === str)
-                                    return true;
-                            }
+                    Object.keys(headerCounts).forEach(header => {
+                        const count = headerCounts[header];
+                        for (let i = 0; i < count; i++) {
+                            strSpalten += header + ';';
+                            processedHeaders.add(header);
                         }
+                    });
+                    function filter(str) {
+                        if (str.match(/VERSION/i)) 
+                        return true;
+                        if (str.match(/BEGIN/i)) 
+                        return true;
+                        if (str.match(/END/i)) 
+                        return true;
                         return false;
                     }
 
@@ -304,44 +299,48 @@
                     //Wird nur die Werte enthalten 
                     var arrEntgueltig = [];
 
-
-                    //Ausgabe Objekt
-                    var obj = {};
-
-
-                    var tempStr = '';
                     for (var x = 0; x < ausgabeArr.length; x++) {
-                        for (var i = 0; i < ausgabeArr[x].length; i++) {
-                            // key value
-                            obj[ausgabeArr[x][i][0]] = ausgabeArr[x][i][1];
-                        }
+                        var tempValues = {};
 
+                        Object.keys(headerCounts).forEach(header => {
+                            tempValues[header] = [];
+                        });
+                        for (var i = 0; i < ausgabeArr[x].length; i++) {
+                            var field = ausgabeArr[x][i][0];
+                            if (!filter(field)) {
+                                tempValues[field].push(ausgabeArr[x][i][1]);
+                            }
+                        }
+                        var tempStr = '';
                         var spaltenWerte = strSpalten.split(';');
                         for (var y = 0; y < spaltenWerte.length; y++) {
-                            tempStr += obj[spaltenWerte[y]] + ';';
+                            if (spaltenWerte[y]) {
+                                var header = spaltenWerte[y];
+                                var value = tempValues[header].shift() || '';
+                                tempStr += value + ';';
+                            }
                         }
-                        
-                        
+
+
                         //Hier wird abgefüllt!!
                         tempStr = tempStr.replace(/undefined/g, '');
                         arrEntgueltig[x] = tempStr;
 
 
-                        
+
                         //Ausgabe aufs Textfeld %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         //Stellt Autokorrektur zurück(Rote Wellenlinien)
                         textarea2.value = '';
-                        
+                                                
                         //Kopfzeile
                         textarea2.value = strSpalten + '\n';
                         
                         //Werte(Zeilen)
                         for (var y = 0; y < arrEntgueltig.length; y++) {
-                            textarea2.value += arrEntgueltig[y] + '\n'; 
+                            textarea2.value += arrEntgueltig[y] + '\n';
                         }
                         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                        tempStr = '';
-                        obj = {};
+
                     }
                     
                     //?????????????????????????????????????????????????????????????????????????????????
