@@ -296,20 +296,40 @@
                     }
 
                     let originalHeaders = strSpalten.split(',');
-                    let telCount = 1;
-                    
-                    // Create mapping of old to new headers
+                    let phoneNumbers = [];
+                    let phoneTypes = new Set();
+
+                    // First pass: collect all phone numbers and their types
+                    for (var x = 0; x < ausgabeArr.length; x++) {
+                        let currentPhoneNumbers = [];
+                        for (var i = 0; i < ausgabeArr[x].length; i++) {
+                            if (ausgabeArr[x][i][0].includes('TEL')) {
+                                let phoneNum = ausgabeArr[x][i][1];
+                                let typeMatch = ausgabeArr[x][i][0].match(/type=(CELL|HOME|WORK)/i);
+                                let phoneType = typeMatch ? typeMatch[1].toLowerCase() : 'home';
+                                currentPhoneNumbers.push({ number: phoneNum, type: phoneType });
+                                phoneTypes.add(phoneType);
+                            }
+                        }
+                        // Keep track of the maximum number of phone numbers found in any single entry
+                        if (currentPhoneNumbers.length > phoneNumbers.length) {
+                            phoneNumbers = currentPhoneNumbers;
+                        }
+                    }
+
+                    // Create headers based on actual number of phone numbers found
                     let headerMapping = {};
                     let newHeaders = ['groupname', 'grouptype', 'displayname'];
+
+                    // Create phone number and type headers only for the actual number of phone numbers
+                    for (let i = 1; i <= phoneNumbers.length; i++) {
+                        newHeaders.push(`phone_${i}_number`);
+                        newHeaders.push(`phone_${i}_type`);
+                    }
+
+                    // Create mapping for FN
                     originalHeaders.forEach(header => {
-                        if (header.includes('TEL')) {
-                            let phoneHeader = 'phone_' + telCount + '_number';
-                            let typeHeader = 'phone_' + telCount + '_type';
-                            headerMapping[header] = phoneHeader;
-                            newHeaders.push(phoneHeader);
-                            newHeaders.push(typeHeader);
-                            telCount++;
-                        } else if (header === 'FN') {
+                        if (header === 'FN') {
                             headerMapping[header] = 'displayname';
                         }
                     });
@@ -359,7 +379,16 @@
 
                         var spaltenWerte = strSpalten.split(',');
                         var rowValues = [];  // Store values in array instead of string
-                        
+                        let processedPhoneNumbers = new Set();
+                        let currentEntryPhones = [];
+
+                        // First collect all phone numbers for this entry
+                        for (var i = 0; i < ausgabeArr[x].length; i++) {
+                            if (ausgabeArr[x][i][0].includes('TEL')) {
+                                currentEntryPhones.push(ausgabeArr[x][i][1]);
+                            }
+                        }
+
                         for (var y = 0; y < spaltenWerte.length; y++) {
                             let value;
                             if (spaltenWerte[y] === 'groupname') {
@@ -370,7 +399,8 @@
                                 if (spaltenWerte[y].includes('_type')) {
                                     value = 'home';
                                 } else {
-                                    value = obj[spaltenWerte[y]] || '555';
+                                    let phoneIndex = parseInt(spaltenWerte[y].match(/phone_(\d+)_number/)[1]) - 1;
+                                    value = currentEntryPhones[phoneIndex] || '555';
                                     if (value) {
                                         value = value.replace(/\s+/g, '').replace(/^\+49/, '0');
                                     }
